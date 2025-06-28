@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Explore - EduSocial</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+    />
+    <style>
+      .explore-card {
+        transition: transform 0.3s;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      .explore-card:hover {
+        transform: translateY(-5px);
+      }
+      .category-tabs .nav-link {
+        border: none;
+        color: #495057;
+        font-weight: 500;
+      }
+      .category-tabs .nav-link.active {
+        color: #4e73df;
+        border-bottom: 3px solid #4e73df;
+        background: transparent;
+      }
+      .trending-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #ff6b6b;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation (same as index.html) -->
+
+    <div class="container mt-4">
+      <div class="row">
+        <div class="col-lg-3">
+          <!-- Sidebar filters -->
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5>Filters</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">Categories</label>
+                <select class="form-select" id="category-filter">
+                  <option value="">All Categories</option>
+                  <option>Mathematics</option>
+                  <option>Science</option>
+                  <option>Programming</option>
+                  <option>Literature</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Content Type</label>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="type-posts"
+                    checked
+                  />
+                  <label class="form-check-label" for="type-posts">Posts</label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="type-courses"
+                    checked
+                  />
+                  <label class="form-check-label" for="type-courses"
+                    >Courses</label
+                  >
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="type-people"
+                    checked
+                  />
+                  <label class="form-check-label" for="type-people"
+                    >People</label
+                  >
+                </div>
+              </div>
+              <button class="btn btn-primary w-100" id="apply-filters">
+                Apply Filters
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h5>Trending Tags</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-flex flex-wrap gap-2" id="trending-tags">
+                <!-- Filled by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-9">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Explore Content</h2>
+            <div class="input-group" style="max-width: 300px">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search..."
+                id="explore-search"
+              />
+              <button class="btn btn-outline-secondary" type="button">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+          </div>
+
+          <ul class="nav nav-tabs category-tabs mb-4" id="exploreTabs">
+            <li class="nav-item">
+              <a class="nav-link active" data-bs-toggle="tab" href="#popular"
+                >Popular</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#recent">Recent</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#educators"
+                >Top Educators</a
+              >
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="popular">
+              <div class="row" id="popular-content">
+                <!-- Filled by JavaScript -->
+              </div>
+            </div>
+            <div class="tab-pane fade" id="recent">
+              <div class="row" id="recent-content">
+                <!-- Filled by JavaScript -->
+              </div>
+            </div>
+            <div class="nav-item">
+              <div class="row" id="educators-content">
+                <!-- Filled by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Load explore data
+      async function loadExploreData() {
+        try {
+          const response = await fetch("/api/explore");
+          const data = await response.json();
+
+          // Render popular posts
+          const popularContainer = document.getElementById("popular-content");
+          popularContainer.innerHTML = data.popular_posts
+            .map(
+              (post) => `
+                    <div class="col-md-4">
+                        <div class="explore-card card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">${post.title}</h5>
+                                <p class="card-text text-muted">By ${post.author}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-primary">${post.likes} Likes</span>
+                                    <a href="/post.html?id=${post.id}" class="btn btn-sm btn-outline-primary">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            )
+            .join("");
+
+          // Load more data for other tabs
+          // You would implement similar fetches for recent content and educators
+        } catch (error) {
+          console.error("Error loading explore data:", error);
+        }
+      }
+
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", () => {
+        loadExploreData();
+
+        // Load trending tags
+        fetch("/api/tags/popular")
+          .then((response) => response.json())
+          .then((tags) => {
+            const tagsContainer = document.getElementById("trending-tags");
+            tagsContainer.innerHTML = tags
+              .map(
+                (tag) => `
+                        <a href="#" class="btn btn-sm btn-outline-secondary">#${tag.name}</a>
+                    `
+              )
+              .join("");
+          });
+      });
+    </script>
+  </body>
+</html>

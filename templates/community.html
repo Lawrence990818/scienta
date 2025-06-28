@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Community - EduSocial</title>
+    <!-- Same CSS/JS includes as explore.html -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+    />
+    <style>
+      .community-card {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        margin-bottom: 20px;
+      }
+      .community-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+        margin-left: -10px;
+      }
+      .member-avatar:first-child {
+        margin-left: 0;
+      }
+      .discussion-card {
+        border-left: 3px solid #4e73df;
+        transition: all 0.3s;
+      }
+      .discussion-card:hover {
+        background-color: #f8f9fa;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation (same as index.html) -->
+
+    <div class="container mt-4">
+      <div class="row">
+        <div class="col-lg-8">
+          <h2 class="mb-4">Community Discussions</h2>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="d-flex mb-3">
+                <img
+                  src="/static/images/default-avatar.png"
+                  class="rounded-circle me-3"
+                  width="50"
+                  height="50"
+                  alt="User avatar"
+                  id="current-user-avatar"
+                />
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Start a discussion..."
+                />
+              </div>
+              <div class="d-flex justify-content-end">
+                <button class="btn btn-primary">Post</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="discussions-list">
+            <!-- Discussions will be loaded here -->
+            <div class="text-center my-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Active Members</h5>
+            </div>
+            <div class="card-body" id="active-members">
+              <!-- Filled by JavaScript -->
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Popular Groups</h5>
+            </div>
+            <div class="card-body" id="popular-groups">
+              <!-- Filled by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Load community data
+      async function loadCommunityData() {
+        try {
+          const response = await fetch("/api/community");
+          const data = await response.json();
+
+          // Render active members
+          const membersContainer = document.getElementById("active-members");
+          membersContainer.innerHTML = data.active_users
+            .map(
+              (user) => `
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="${
+                          user.avatar || "/static/images/default-avatar.png"
+                        }" 
+                             class="rounded-circle me-3" width="40" height="40" alt="${
+                               user.name
+                             }">
+                        <div>
+                            <h6 class="mb-0">${user.name}</h6>
+                            <small class="text-muted">Active ${formatTimeAgo(
+                              user.last_active
+                            )}</small>
+                        </div>
+                    </div>
+                `
+            )
+            .join("");
+
+          // Render popular groups
+          const groupsContainer = document.getElementById("popular-groups");
+          groupsContainer.innerHTML = data.popular_groups
+            .map(
+              (group) => `
+                    <div class="community-card card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">${group.name}</h5>
+                            <p class="card-text text-muted small">${
+                              group.description || "No description"
+                            }</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex">
+                                    <img src="/static/images/default-avatar.png" class="member-avatar">
+                                    <img src="/static/images/default-avatar.png" class="member-avatar">
+                                    <img src="/static/images/default-avatar.png" class="member-avatar">
+                                    <span class="ms-2">+${
+                                      group.member_count - 3
+                                    }</span>
+                                </div>
+                                <a href="#" class="btn btn-sm btn-outline-primary">Join</a>
+                            </div>
+                        </div>
+                    </div>
+                `
+            )
+            .join("");
+
+          // Load discussions
+          loadDiscussions();
+        } catch (error) {
+          console.error("Error loading community data:", error);
+        }
+      }
+
+      function loadDiscussions() {
+        // Implement discussion loading
+      }
+
+      function formatTimeAgo(timestamp) {
+        // Implement time ago formatting
+        return "recently";
+      }
+
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", () => {
+        loadCommunityData();
+      });
+    </script>
+  </body>
+</html>

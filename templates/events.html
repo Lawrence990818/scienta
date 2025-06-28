@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events - EduSocial</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+    />
+    <!-- Same CSS/JS includes as explore.html -->
+    <style>
+      .event-card {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        margin-bottom: 20px;
+      }
+      .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      .event-date {
+        width: 70px;
+        height: 70px;
+        background: #4e73df;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+      }
+      .event-date .day {
+        font-size: 24px;
+        font-weight: bold;
+        line-height: 1;
+      }
+      .event-date .month {
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+      .event-img {
+        height: 200px;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation (same as index.html) -->
+
+    <div class="container mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Upcoming Events</h2>
+        <button
+          class="btn btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#createEventModal"
+        >
+          <i class="bi bi-plus"></i> Create Event
+        </button>
+      </div>
+
+      <div class="row" id="events-container">
+        <!-- Events will be loaded here -->
+        <div class="col-12 text-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div
+      class="modal fade"
+      id="createEventModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create New Event</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="eventForm">
+              <div class="mb-3">
+                <label class="form-label">Event Title</label>
+                <input type="text" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" rows="3"></textarea>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Start Date & Time</label>
+                  <input type="datetime-local" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">End Date & Time</label>
+                  <input type="datetime-local" class="form-control" required />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Event Image</label>
+                <input type="file" class="form-control" accept="image/*" />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary">Create Event</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Load events data
+      async function loadEvents() {
+        try {
+          const response = await fetch("/api/events");
+          const data = await response.json();
+
+          const container = document.getElementById("events-container");
+          container.innerHTML = data.events
+            .map(
+              (event) => `
+                    <div class="col-lg-6">
+                        <div class="event-card card">
+                            <img src="${
+                              event.image_url ||
+                              "/static/images/event-placeholder.jpg"
+                            }" 
+                                 class="event-img card-img-top" alt="${
+                                   event.title
+                                 }">
+                            <div class="card-body">
+                                <div class="d-flex">
+                                    <div class="event-date me-3">
+                                        <div class="day">${new Date(
+                                          event.start_time
+                                        ).getDate()}</div>
+                                        <div class="month">${new Date(
+                                          event.start_time
+                                        ).toLocaleString("default", {
+                                          month: "short",
+                                        })}</div>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title">${
+                                          event.title
+                                        }</h5>
+                                        <p class="card-text text-muted">
+                                            <i class="bi bi-clock"></i> ${formatTimeRange(
+                                              event.start_time,
+                                              event.end_time
+                                            )}<br>
+                                            <i class="bi bi-geo-alt"></i> ${
+                                              event.location || "Online"
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <img src="${
+                                      event.organizer.avatar ||
+                                      "/static/images/default-avatar.png"
+                                    }" 
+                                         class="rounded-circle me-2" width="30" height="30" alt="${
+                                           event.organizer.name
+                                         }">
+                                    <small>${event.organizer.name}</small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-light text-dark me-2">
+                                        <i class="bi bi-people"></i> ${
+                                          event.attendee_count
+                                        }
+                                    </span>
+                                    <button class="btn btn-sm btn-primary">Register</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            )
+            .join("");
+        } catch (error) {
+          console.error("Error loading events:", error);
+          document.getElementById("events-container").innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger">Failed to load events. Please try again later.</div>
+                    </div>
+                `;
+        }
+      }
+
+      function formatTimeRange(start, end) {
+        // Implement time range formatting
+        return "Time range";
+      }
+
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", () => {
+        loadEvents();
+      });
+    </script>
+  </body>
+</html>
