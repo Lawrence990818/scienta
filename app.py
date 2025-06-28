@@ -10,6 +10,9 @@ from datetime import datetime, timedelta
 from flask_cors import CORS
 from PIL import Image
 import io
+import threading
+import time
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -885,6 +888,22 @@ def get_popular_tags():
     popular_tags.sort(key=lambda x: x['post_count'], reverse=True)
     
     return jsonify(popular_tags[:10])  # Return top 10
+# prevent server from spleeping testing
+def wake_up():
+    while True:
+        # Replace with your actual Render URL
+        url = "https://your-app-name.onrender.com"
+        try:
+            requests.get(url)
+            print("Keep-alive request sent")
+        except Exception as e:
+            print(f"Keep-alive failed: {e}")
+        time.sleep(840)  # 14 minutes
+
+# Start the background thread
+thread = threading.Thread(target=wake_up)
+thread.daemon = True
+thread.start()
 
 if __name__ == "__main__":
     with app.app_context():
